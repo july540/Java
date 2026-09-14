@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="ejnh005aREB1jukhHuTHuq">
+<head data-page-node-id="t7k39v5BdFEGV54q0Risy5">
+<meta charset="UTF-8" data-page-node-id="WJI0LBFyM3pinITnRPWu78" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="otTHkN1mFVOPErZ8uvXi6W" />
+<title>微信 · 登录 / 注册</title>
+<style>
+  :root {
+    --wx-green: #07c160;
+    --wx-green-dark: #06a850;
+    --wx-green-soft: #e8f8ef;
+    --text-main: #1a1a1a;
+    --text-sub: #9a9a9a;
+    --line: #ededed;
+    --bg-input: #f6f6f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 30% 20%, #eafaf1 0%, #f2f3f5 45%, #e9ebef 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    color: var(--text-main);
+    padding: 24px;
+  }
+
+  /* ===== 手机外壳 ===== */
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #0c0c0e;
+    border-radius: 46px;
+    padding: 13px;
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,.45), 0 0 0 2px #2a2a2e;
+    position: relative;
+  }
+  .notch {
+    position: absolute;
+    top: 13px; left: 50%; transform: translateX(-50%);
+    width: 150px; height: 26px;
+    background: #0c0c0e; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;
+    z-index: 5;
+  }
+  .screen {
+    width: 100%; height: 100%;
+    background: #f7f8fa;
+    border-radius: 34px;
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+
+  /* ===== 状态栏 ===== */
+  .status-bar {
+    height: 44px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px;
+    font-size: 14px; font-weight: 600;
+    color: #1a1a1a;
+    flex-shrink: 0;
+  }
+  .status-bar .icons { display: flex; align-items: center; gap: 6px; }
+  .status-bar svg { display: block; }
+
+  /* ===== 内容区 ===== */
+  .app {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 18px 28px 24px;
+    overflow-y: auto;
+  }
+
+  .logo {
+    margin-top: 26px;
+    width: 76px; height: 76px;
+    filter: drop-shadow(0 8px 14px rgba(7,193,96,.28));
+    animation: pop .5s ease;
+  }
+  @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .brand {
+    font-size: 22px; font-weight: 700; letter-spacing: 2px;
+    margin-top: 10px; color: #1a1a1a;
+  }
+  .slogan { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+
+  /* ===== 切换标签 ===== */
+  .tabs {
+    position: relative;
+    display: flex;
+    margin-top: 34px;
+    background: #fff;
+    border-radius: 999px;
+    padding: 5px;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(0,0,0,.04);
+  }
+  .tab {
+    flex: 1;
+    border: none; background: transparent;
+    padding: 11px 0; font-size: 15px; font-weight: 600;
+    color: #666; cursor: pointer; position: relative; z-index: 2;
+    transition: color .25s;
+  }
+  .tab.active { color: #fff; }
+  .tab-indicator {
+    position: absolute; top: 5px; left: 5px;
+    width: calc(50% - 5px); height: calc(100% - 10px);
+    background: var(--wx-green);
+    border-radius: 999px;
+    transition: transform .3s cubic-bezier(.4,1.3,.5,1);
+    z-index: 1;
+  }
+  .tabs.register .tab-indicator { transform: translateX(100%); }
+
+  /* ===== 表单 ===== */
+  .form {
+    width: 100%;
+    margin-top: 26px;
+    display: none;
+    animation: fade .35s ease;
+  }
+  .form.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .field {
+    display: flex; align-items: center;
+    background: var(--bg-input);
+    border-radius: 12px;
+    padding: 0 14px;
+    height: 50px;
+    margin-bottom: 14px;
+    transition: box-shadow .2s, background .2s;
+  }
+  .field:focus-within { background: #fff; box-shadow: 0 0 0 1.5px var(--wx-green); }
+  .field .prefix { font-size: 15px; color: #333; font-weight: 600; padding-right: 10px; }
+  .field .sep { width: 1px; height: 20px; background: #dcdcdc; margin-right: 12px; }
+  .field input {
+    flex: 1; border: none; background: transparent; outline: none;
+    font-size: 15px; color: #1a1a1a;
+  }
+  .field input::placeholder { color: #b5b5b5; }
+
+  .code-btn {
+    border: none; background: transparent; color: var(--wx-green);
+    font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    padding-left: 10px;
+  }
+  .code-btn:disabled { color: #b5b5b5; cursor: not-allowed; }
+
+  .eye {
+    border: none; background: transparent; cursor: pointer;
+    color: #b5b5b5; font-size: 18px; padding: 0 2px;
+    display: flex; align-items: center;
+  }
+
+  .btn-primary {
+    width: 100%; height: 50px; border: none; border-radius: 12px;
+    background: var(--wx-green); color: #fff;
+    font-size: 16px; font-weight: 600; letter-spacing: 2px;
+    cursor: pointer; margin-top: 8px;
+    transition: background .2s, transform .08s;
+    box-shadow: 0 8px 18px -6px rgba(7,193,96,.5);
+  }
+  .btn-primary:hover { background: var(--wx-green-dark); }
+  .btn-primary:active { transform: scale(.98); }
+
+  .row-links {
+    display: flex; justify-content: space-between;
+    margin-top: 16px; font-size: 13px;
+  }
+  .row-links a { color: #576b95; text-decoration: none; cursor: pointer; }
+  .row-links a:hover { text-decoration: underline; }
+
+  .agree {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin-top: 18px; font-size: 12px; color: #888; line-height: 1.5;
+  }
+  .agree input { margin-top: 2px; accent-color: var(--wx-green); width: 15px; height: 15px; }
+  .agree a { color: #576b95; text-decoration: none; }
+
+  .switch-mode {
+    text-align: center; margin-top: 18px; font-size: 13px; color: #888;
+  }
+  .switch-mode span { color: var(--wx-green); font-weight: 600; cursor: pointer; }
+
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 30px 0 18px; color: #c5c5c5; font-size: 12px;
+  }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .more-login { display: flex; justify-content: center; gap: 26px; }
+  .more-login .ic {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05); cursor: pointer; font-size: 20px;
+    transition: transform .15s;
+  }
+  .more-login .ic:hover { transform: translateY(-3px); }
+
+  .footer {
+    margin-top: auto; padding-top: 16px;
+    font-size: 11px; color: #c0c0c0; text-align: center;
+  }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%,-50%) scale(.9);
+    background: rgba(0,0,0,.82); color: #fff;
+    padding: 14px 22px; border-radius: 12px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    z-index: 99; text-align: center; max-width: 280px;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+  .home-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 16px; }
+  .home-screen.show { display: flex; }
+  .home-screen .big-logo { width: 90px; filter: drop-shadow(0 10px 18px rgba(7,193,96,.3)); }
+  .home-screen .hi { font-size: 18px; font-weight: 600; color: #1a1a1a; }
+
+  ::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body data-page-node-id="watlWIv1IJCAkmDlTXbQZX">
+  <div class="phone" data-page-node-id="sLynotzyFxPqLMavp1KDim">
+    <div class="notch" data-page-node-id="r2s9YlnSLFoTHKI9D1pDFT"></div>
+    <div class="screen" data-page-node-id="WInn1yFeklcNOpT7Wg7f64">
+      <!-- 状态栏 -->
+      <div class="status-bar" data-page-node-id="wmvzFRgGfR6Xewa4zss25j">
+        <span id="clock" data-page-node-id="Hr0EyDP11kT5MPSaNMkOjA">9:41</span>
+        <div class="icons" data-page-node-id="bCLQnBxtQBUfW19tByD5J1">
+          <svg width="17" height="12" viewBox="0 0 17 12" data-page-node-id="sBKbktsxX04DkM5t0Gmj6A"><g fill="#1a1a1a" data-page-node-id="RovxYVGUFzNxm7VAFpePvk"><rect x="0" y="7" width="3" height="5" rx="1" data-page-node-id="IR5AkAuiKKsZnxj4ziGiCx"/><rect x="4.5" y="5" width="3" height="7" rx="1" data-page-node-id="wn5xFAIfBafTpPIjWTudZl"/><rect x="9" y="2.5" width="3" height="9.5" rx="1" data-page-node-id="JiyktrCBavuKNRMEJ0Je9s"/><rect x="13.5" y="0" width="3" height="12" rx="1" data-page-node-id="l6Db0DonQflQ5TVxEeq7j8"/></g></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" data-page-node-id="w4HD04O5LziDRmntF4Usbb"><path fill="#1a1a1a" d="M8 2.2c2 0 3.8.8 5.1 2.1l1.2-1.2A9 9 0 0 0 8 .4C5.3.4 2.9 1.4 1.1 3l1.2 1.2A7 7 0 0 1 8 2.2zm0 3.1c1.1 0 2.1.4 2.9 1.2l1.2-1.2A6.6 6.6 0 0 0 8 3.7c-1.7 0-3.3.7-4.5 1.8l1.2 1.2A4.3 4.3 0 0 1 8 5.3zm0 3c.6 0 1.2.3 1.6.7L8 11.3 6.4 9.7c.4-.4 1-.7 1.6-.7z" data-page-node-id="5ZCDt6UD8sfxNskbjKEKRr"/></svg>
+          <svg width="26" height="13" viewBox="0 0 26 13" data-page-node-id="cXH2jWhgHdLsVUDc6fkQN1"><rect x=".5" y=".5" width="21" height="12" rx="3" fill="none" stroke="#1a1a1a" data-page-node-id="DxnpUsXTDGPtXQZMxSFLgS"/><rect x="2" y="2" width="17" height="9" rx="1.5" fill="#1a1a1a" data-page-node-id="q0whCmUNGqcTQZZZsa6dsp"/><rect x="23" y="4" width="2" height="5" rx="1" fill="#1a1a1a" data-page-node-id="pETDJM98wsHiAIQOERtPdx"/></svg>
+        </div>
+      </div>
+
+      <!-- 应用内容 -->
+      <div class="app" id="app" data-page-node-id="v6z0XDJ9OBzTsBZ4anjcv8">
+        <svg class="logo" viewBox="0 0 100 100" aria-label="微信" data-page-node-id="pVq45PFzkxnYMlphyqFDvw">
+          <circle cx="40" cy="42" r="30" fill="#07C160" data-page-node-id="RHl6RYVvxKjzaNMcDKhFXZ"/>
+          <circle cx="30" cy="38" r="5.5" fill="#fff" data-page-node-id="xMBVeZBI4uYBRCHsrxVPRD"/>
+          <circle cx="52" cy="38" r="5.5" fill="#fff" data-page-node-id="ND5yNc2nvCTvJDsRdVZ4ml"/>
+          <path d="M12 60 L4 72 L20 64 Z" fill="#07C160" data-page-node-id="c7cpER6rG08z3dnvSgJBd5"/>
+          <circle cx="70" cy="64" r="17" fill="#07C160" data-page-node-id="m7z2nn5WCrKYkyDYkOfA2E"/>
+          <circle cx="66" cy="62" r="3" fill="#fff" data-page-node-id="X8o9jQL8iCjbeU1M93JFEE"/>
+        </svg>
+        <div class="brand" data-page-node-id="GEzyrzvZcIY50yVRvYXZQX">微信</div>
+        <div class="slogan" data-page-node-id="0WxXJR6GEKdK8282ZeyAZk">微信，是一个生活方式</div>
+
+        <div class="tabs" id="tabs" data-page-node-id="JEgXt8dAoCOkPyTAcOZpTV">
+          <button class="tab active" data-tab="login" data-page-node-id="8itcEa9e3EnYV1EnEAMTze">登录</button>
+          <button class="tab" data-tab="register" data-page-node-id="OvBdUmF4XBBeCGBa1cdAjz">注册</button>
+          <span class="tab-indicator" data-page-node-id="wxvYvFRwa9dMFEplHSbjiL"></span>
+        </div>
+
+        <!-- 登录表单 -->
+        <form class="form active" id="loginForm" novalidate data-page-node-id="vLhh7guheTAcCiO5H6wHtO">
+          <div class="field" data-page-node-id="fCEuvzH75JUYCnDkm2WuW4">
+            <span class="prefix" data-page-node-id="6KT11ezPQzoNg6lBHn6yIw">+86</span><span class="sep" data-page-node-id="qPkF9fGVzO81WB8UbM0Q9S"></span>
+            <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11" data-page-node-id="vKFTeROcFUgaysisTAz3T7" />
+          </div>
+          <div class="field" id="loginPwdField" data-page-node-id="0jEJvhQ8EiZJR1wUvoQIRi">
+            <input type="password" id="loginPwd" placeholder="请输入密码" data-page-node-id="k1Bd9YZqvxBrfoXAqgFKDG" />
+            <button type="button" class="eye" data-target="loginPwd" data-page-node-id="MRKaWV5JxZvxsHVjU3MAqh">👁</button>
+          </div>
+          <div class="field" id="loginCodeField" style="display:none" data-page-node-id="Sr5UlXRyO7ReQSsCzE7jNJ">
+            <input type="tel" id="loginCode" placeholder="请输入验证码" maxlength="6" data-page-node-id="aK3jsU3lADnIJdX3X7bpbR" />
+            <button type="button" class="code-btn" data-phone="loginPhone" data-page-node-id="DEe8gM4SNvMqJFVzjTZ1h0">获取验证码</button>
+          </div>
+          <button type="submit" class="btn-primary" data-page-node-id="PvO0iDE5bmIcl6yBVwKlev">登 录</button>
+          <div class="row-links" data-page-node-id="ux3qRO69y7ra3L6wlLpFso">
+            <a id="loginSwitchMode" data-page-node-id="nzUjVQStrlkyPCYaGYUGBs">用短信验证码登录</a>
+            <a href="#" data-page-node-id="LLpFDEf5RACHuhNAfAkvjb">找回密码</a>
+          </div>
+          <div class="divider" data-page-node-id="K3teUPnKNs37090jBzkwfG">其他登录方式</div>
+          <div class="more-login" data-page-node-id="IP6960WWVhF0VVjG2eRDnm">
+            <div class="ic" title="QQ登录" data-page-node-id="sh9NPO9onG5ibCjoFP891U">🐧</div>
+            <div class="ic" title="邮箱登录" data-page-node-id="SGj7sQyC3fob89AgsbE6C6">✉️</div>
+            <div class="ic" title="扫码登录" data-page-node-id="zRn0Igxrjfg2bk1CBjZ3VG">🔍</div>
+          </div>
+        </form>
+
+        <!-- 注册表单 -->
+        <form class="form" id="registerForm" novalidate data-page-node-id="hkk0lSN0l9imo0dFgfAwA7">
+          <div class="field" data-page-node-id="w1DUpEOES6plYxr32uviBM">
+            <span class="prefix" data-page-node-id="k4lyS7J859GdrhRbTgFyFd">+86</span><span class="sep" data-page-node-id="l6yFkPAhF63CqWgu1CAprM"></span>
+            <input type="tel" id="regPhone" placeholder="请输入手机号" maxlength="11" data-page-node-id="iKXiP8tPvBOsFmiXAgCMW3" />
+          </div>
+          <div class="field" data-page-node-id="H5e0Ft8tFV3DfrwWW1gB7B">
+            <input type="tel" id="regCode" placeholder="请输入短信验证码" maxlength="6" data-page-node-id="X7GGWxJ6UIz9dxhvXQu5up" />
+            <button type="button" class="code-btn" data-phone="regPhone" data-page-node-id="sVQCmZ1TRkuN0TMLp8MFEJ">获取验证码</button>
+          </div>
+          <div class="field" data-page-node-id="WClj49qgMObBen5vZQ2AVq">
+            <input type="password" id="regPwd" placeholder="设置登录密码（6-20位）" data-page-node-id="62LrA1fHPm9WVTOnLVJK2S" />
+            <button type="button" class="eye" data-target="regPwd" data-page-node-id="HJmlL47rYI0DYlJMPpuxhs">👁</button>
+          </div>
+          <div class="field" data-page-node-id="r5wJ6ChhmKowAXeK3Ku1WI">
+            <input type="password" id="regPwd2" placeholder="确认登录密码" data-page-node-id="AWSMd536S46KN7jGhah5Zt" />
+            <button type="button" class="eye" data-target="regPwd2" data-page-node-id="vrkWN09OrI1FncQuAoFAyX">👁</button>
+          </div>
+          <button type="submit" class="btn-primary" data-page-node-id="YvdNqFaHEFtGGV2N07lo71">注 册</button>
+          <label class="agree" data-page-node-id="z20A0bzwAvTPYpkchZuqJa">
+            <input type="checkbox" id="agree" data-page-node-id="tJ4zGbBBcZXCCYvKty7Rcv" />
+            <span data-page-node-id="dIpc9AI5Z5rxHPgBkm2Shi">我已阅读并同意 <a href="#" data-page-node-id="N8HDFr15uDHhfkillZ8GKm">《微信软件许可及服务协议》</a> 与 <a href="#" data-page-node-id="UtgEMUkJeKlFlfsCymtdpD">《隐私保护指引》</a></span>
+          </label>
+        </form>
+
+        <div class="footer" data-page-node-id="Och4elwDodmT4qcb0lXjwZ">微信 8.0 · 课程作业演示版</div>
+      </div>
+
+      <!-- 登录成功后的“首页”占位 -->
+      <div class="home-screen" id="homeScreen" data-page-node-id="XcUOIhGdSHNCLilxUu5CzG">
+        <svg class="big-logo" viewBox="0 0 100 100" data-page-node-id="E1tdE1JJepJ6aenOYNoPOf">
+          <circle cx="40" cy="42" r="30" fill="#07C160" data-page-node-id="ksg3RNDPDv6pR8LQi5Bu4v"/>
+          <circle cx="30" cy="38" r="5.5" fill="#fff" data-page-node-id="qBdjenMEHn44DZKCKEeAjo"/>
+          <circle cx="52" cy="38" r="5.5" fill="#fff" data-page-node-id="HeaeGplzSmnGh0cWJbM27e"/>
+          <path d="M12 60 L4 72 L20 64 Z" fill="#07C160" data-page-node-id="LN0d4Jbn3B45AupXQGYIEh"/>
+          <circle cx="70" cy="64" r="17" fill="#07C160" data-page-node-id="IHYiO1XIu8TW5aA9SbYmH6"/>
+          <circle cx="66" cy="62" r="3" fill="#fff" data-page-node-id="DAUubzdlKQLqvaJury0DEh"/>
+        </svg>
+        <div class="hi" id="welcomeText" data-page-node-id="qj3FG9tE3sjxeYfy6HFcrT">登录成功 🎉</div>
+        <div style="font-size:13px;color:#999" data-page-node-id="gMsGWtCvdQb4P2mDqqIedd">欢迎使用微信（演示）</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast" data-page-node-id="cYC1U1r3MiSmwGQvtYfbLA"></div>
+
+<script>
+  // ===== 时钟 =====
+  function tick() {
+    const d = new Date();
+    document.getElementById('clock').textContent =
+      d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  tick(); setInterval(tick, 10000);
+
+  // ===== Toast =====
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg, ms = 1800) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), ms);
+  }
+
+  // ===== 标签切换 =====
+  const tabs = document.getElementById('tabs');
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      tabs.classList.toggle('register', target === 'register');
+      document.getElementById('loginForm').classList.toggle('active', target === 'login');
+      document.getElementById('registerForm').classList.toggle('active', target === 'register');
+    });
+  });
+
+  // ===== 显示/隐藏密码 =====
+  document.querySelectorAll('.eye').forEach(eye => {
+    eye.addEventListener('click', () => {
+      const inp = document.getElementById(eye.dataset.target);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      eye.textContent = inp.type === 'password' ? '👁' : '🙈';
+    });
+  });
+
+  // ===== 手机号校验 =====
+  const phoneRe = /^1[3-9]\d{9}$/;
+  function getPhone(id) {
+    return (document.getElementById(id).value || '').trim();
+  }
+
+  // ===== 获取验证码（倒计时）=====
+  document.querySelectorAll('.code-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const phone = getPhone(btn.dataset.phone);
+      if (!phoneRe.test(phone)) { showToast('请输入正确的手机号'); return; }
+      let left = 60;
+      btn.disabled = true;
+      btn.textContent = left + 's 后重发';
+      showToast('验证码已发送（演示：任意6位数字）');
+      const timer = setInterval(() => {
+        left--;
+        if (left <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
+        else btn.textContent = left + 's 后重发';
+      }, 1000);
+    });
+  });
+
+  // ===== 登录：密码 / 验证码模式切换 =====
+  const loginPwdField = document.getElementById('loginPwdField');
+  const loginCodeField = document.getElementById('loginCodeField');
+  const loginSwitchMode = document.getElementById('loginSwitchMode');
+  let loginUseCode = false;
+  loginSwitchMode.addEventListener('click', () => {
+    loginUseCode = !loginUseCode;
+    loginPwdField.style.display = loginUseCode ? 'none' : 'flex';
+    loginCodeField.style.display = loginUseCode ? 'flex' : 'none';
+    loginSwitchMode.textContent = loginUseCode ? '用密码登录' : '用短信验证码登录';
+  });
+
+  // ===== 提交：登录 =====
+  document.getElementById('loginForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const phone = getPhone('loginPhone');
+    if (!phoneRe.test(phone)) { showToast('请输入正确的手机号'); return; }
+    if (loginUseCode) {
+      const code = (document.getElementById('loginCode').value || '').trim();
+      if (!/^\d{6}$/.test(code)) { showToast('请输入6位验证码'); return; }
+    } else {
+      const pwd = document.getElementById('loginPwd').value;
+      if (pwd.length < 6) { showToast('密码至少6位'); return; }
+    }
+    showToast('登录成功，正在进入…', 1200);
+    setTimeout(() => {
+      document.getElementById('app').style.display = 'none';
+      const home = document.getElementById('homeScreen');
+      home.classList.add('show');
+      document.getElementById('welcomeText').textContent = '欢迎回来，' + phone;
+    }, 1200);
+  });
+
+  // ===== 提交：注册 =====
+  document.getElementById('registerForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const phone = getPhone('regPhone');
+    if (!phoneRe.test(phone)) { showToast('请输入正确的手机号'); return; }
+    const code = (document.getElementById('regCode').value || '').trim();
+    if (!/^\d{6}$/.test(code)) { showToast('请输入6位验证码'); return; }
+    const pwd = document.getElementById('regPwd').value;
+    const pwd2 = document.getElementById('regPwd2').value;
+    if (pwd.length < 6 || pwd.length > 20) { showToast('密码需为6-20位'); return; }
+    if (pwd !== pwd2) { showToast('两次密码不一致'); return; }
+    if (!document.getElementById('agree').checked) { showToast('请先同意服务协议'); return; }
+    showToast('注册成功，请登录 🎉', 1600);
+    setTimeout(() => {
+      document.querySelector('.tab[data-tab="login"]').click();
+      document.getElementById('loginPhone').value = phone;
+      document.getElementById('registerForm').reset();
+    }, 1600);
+  });
+</script>
+</body>
+</html>
