@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>光之国 · 奥特曼身份验证系统（原生版）</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 背景星空 -->
+<div class="cosmos">
+  <canvas id="starfield"></canvas>
+  <div class="beam beam-1"></div>
+  <div class="beam beam-2"></div>
+  <div class="beam beam-3"></div>
+  <div class="planet"></div>
+</div>
+
+<div class="stage" id="stage">
+
+  <!-- 品牌区 -->
+  <aside class="brand">
+    <span class="tag">M78 星云 · 光之国</span>
+    <div class="brand-inner">
+      <div class="aura"></div>
+
+      <svg class="hero-silhouette" viewBox="0 0 240 320" aria-label="奥特曼立绘">
+        <defs>
+          <linearGradient id="gSilver" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="45%" stop-color="#cfd8e3"/>
+            <stop offset="100%" stop-color="#8f9aa8"/>
+          </linearGradient>
+          <linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ff5f56"/>
+            <stop offset="100%" stop-color="#c3141c"/>
+          </linearGradient>
+          <filter id="fGlow">
+            <feGaussianBlur stdDeviation="6" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <path fill="url(#gSilver)" d="M120 20c26 0 44 18 44 42 0 16-6 28-14 38l-6 8H96l-6-8c-8-10-14-22-14-38 0-24 18-42 44-42z"/>
+        <path fill="url(#gRed)" d="M120 22c22 0 38 15 41 35l-9 2c-3-16-15-27-32-27-17 0-29 11-32 27l-9-2c3-20 19-35 41-35z"/>
+        <ellipse cx="103" cy="72" rx="13" ry="8" fill="#ffe14d" filter="url(#fGlow)">
+          <animate attributeName="rx" values="13;11;13" dur="3.4s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="137" cy="72" rx="13" ry="8" fill="#ffe14d" filter="url(#fGlow)">
+          <animate attributeName="rx" values="13;11;13" dur="3.4s" repeatCount="indefinite"/>
+        </ellipse>
+        <path fill="url(#gSilver)" d="M120 108c30 0 50 14 54 40l-8 88c-14 8-30 12-46 12s-32-4-46-12l-8-88c4-26 24-40 54-40z"/>
+        <path fill="url(#gRed)" d="M66 148l10-2 6 92-12-4zM164 146l10 2-4 86-12 4z"/>
+        <path fill="url(#gRed)" d="M186 152l22 10-18 100-24-10zM54 152l-22 10 18 100 24-10z"/>
+        <circle cx="120" cy="152" r="23" fill="#0d2b52"/>
+        <circle cx="120" cy="152" r="18" fill="#3fe0ff" filter="url(#fGlow)">
+          <animate attributeName="fill" values="#3fe0ff;#ff4d4d;#3fe0ff" dur="6s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="120" cy="152" r="11" fill="#ffffff" opacity=".9"/>
+      </svg>
+
+      <h1 class="hero-title">ULTRAMAN</h1>
+      <p class="hero-sub">ウルトラマン · 光之战士认证终端</p>
+
+      <ul class="facts">
+        <li><em>M78</em><span>光之国 · 宇宙警备队</span></li>
+        <li><em>3:00</em><span>地表活动时间限制</span></li>
+        <li><em class="live">● ONLINE</em><span>系统实时待命中</span></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- 表单区 -->
+  <main class="auth">
+    <div class="tabs">
+      <span class="indicator" id="indicator"></span>
+      <button type="button" class="tab on" data-tab="login">登录</button>
+      <button type="button" class="tab" data-tab="register">注册</button>
+    </div>
+
+    <div class="viewport">
+
+      <!-- 登录 -->
+      <section class="card active" id="card-login">
+        <form id="loginForm" novalidate>
+          <h2 class="title">欢迎回来，光之战士</h2>
+          <p class="desc">登录后即可调用 M78 星云能量，执行守护任务</p>
+
+          <div class="field" id="f-user">
+            <label class="label">队员代号 / 邮箱</label>
+            <div class="box">
+              <span class="lead">◉</span>
+              <input type="text" id="loginUser" placeholder="输入用户名或星际邮箱" autocomplete="username">
+            </div>
+            <p class="msg"></p>
+          </div>
+
+          <div class="field" id="f-pass">
+            <label class="label">密钥</label>
+            <div class="box">
+              <span class="lead">▤</span>
+              <input type="password" id="loginPass" placeholder="请输入登录密码" autocomplete="current-password">
+              <button type="button" class="toggle" data-target="loginPass" aria-label="显示密码">◉</button>
+            </div>
+            <p class="msg"></p>
+          </div>
+
+          <div class="row">
+            <label class="check"><input type="checkbox" id="remember"><i></i><span>记住呼叫机</span></label>
+            <a href="#" class="link" id="toReset">忘记密钥？</a>
+          </div>
+
+          <div class="alert" id="loginAlert"></div>
+
+          <button type="submit" class="btn btn-fire" id="loginBtn"><span>登 录 · 变身！</span></button>
+
+          <p class="switch">还没有队员资格？<a href="#" class="link" data-tab="register">立即注册 →</a></p>
+          <p class="demo">体验账号 <code>ultraman</code> / <code>123456</code></p>
+        </form>
+      </section>
+
+      <!-- 注册 -->
+      <section class="card" id="card-register">
+        <form id="regForm" novalidate>
+          <h2 class="title">申请光之战士资格</h2>
+          <p class="desc">填写资料完成认证，成功后立即返回登录</p>
+
+          <div class="field" id="f-ruser">
+            <label class="label">队员代号</label>
+            <div class="box"><span class="lead">◉</span>
+              <input type="text" id="regUser" placeholder="3–16 位字母 / 数字 / 下划线" autocomplete="username">
+            </div>
+            <p class="msg"></p>
+          </div>
+
+          <div class="field" id="f-remail">
+            <label class="label">星际邮箱</label>
+            <div class="box"><span class="lead">✉</span>
+              <input type="text" id="regEmail" placeholder="name@example.com" autocomplete="email">
+            </div>
+            <p class="msg"></p>
+          </div>
+
+          <div class="field" id="f-rpass">
+            <label class="label">设置密钥</label>
+            <div class="box"><span class="lead">▤</span>
+              <input type="password" id="regPass" placeholder="至少 6 位，含字母与数字更佳" autocomplete="new-password">
+              <button type="button" class="toggle" data-target="regPass" aria-label="显示密码">◉</button>
+            </div>
+            <p class="msg"></p>
+          </div>
+
+          <div class="strength">
+            <div class="bars"><i></i><i></i><i></i></div>
+            <span class="stext">能量强度：—</span>
+          </div>
+
+          <div class="field" id="f-rpass2">
+            <label class="label">确认密钥</label>
+            <div class="box"><span class="lead">✚</span>
+              <input type="password" id="regPass2" placeholder="请再次输入密码" autocomplete="new-password">
+              <button type="button" class="toggle" data-target="regPass2" aria-label="显示密码">◉</button>
+            </div>
+            <p class="msg"></p>
+          </div>
+
+          <div class="tribe-box">
+            <span class="caption">选择所属族群</span>
+            <div class="tribes">
+              <button type="button" class="tribe red" data-tribe="red"><b>红族</b><small>战斗专精 · 力量型</small></button>
+              <button type="button" class="tribe silver active" data-tribe="silver"><b>银族</b><small>全能平衡 · 指挥型</small></button>
+              <button type="button" class="tribe blue" data-tribe="blue"><b>蓝族</b><small>高速机动 · 敏捷型</small></button>
+            </div>
+          </div>
+
+          <label class="check agree"><input type="checkbox" id="agree"><i></i><span>我已阅读并同意《光之国保密与守护条例》</span></label>
+          <p class="msg agree-msg" id="agreeMsg"></p>
+
+          <div class="alert" id="regAlert"></div>
+
+          <button type="submit" class="btn btn-energy" id="regBtn"><span>提交注册申请</span></button>
+
+          <p class="switch">已有队员资格？<a href="#" class="link" data-tab="login">返回登录 ←</a></p>
+        </form>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- 登录成功 -->
+<div class="welcome" id="welcome">
+  <div class="welcome-card">
+    <div class="rays"></div>
+    <svg class="ring" viewBox="0 0 120 120">
+      <circle class="track" cx="60" cy="60" r="52"></circle>
+      <circle class="prog" id="prog" cx="60" cy="60" r="52"></circle>
+    </svg>
+    <div class="core">
+      <svg viewBox="0 0 24 24" class="tick"><path d="m5 13 4 4L19 7"></path></svg>
+    </div>
+    <h2>变身成功！</h2>
+    <p class="who">欢迎，<strong id="welcomeName">战士</strong></p>
+    <span class="badge" id="welcomeBadge">银族 · 全能型</span>
+    <ul class="stats">
+      <li><b id="statEmail">—</b><span>星际邮箱</span></li>
+      <li><b id="statClock">03:00</b><span>地表活动时间</span></li>
+    </ul>
+    <button type="button" class="btn btn-fire small" id="logoutBtn"><span>退出登录</span></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/starfield.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
